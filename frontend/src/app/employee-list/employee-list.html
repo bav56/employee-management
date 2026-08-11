@@ -1,0 +1,623 @@
+<h2>Employees</h2>
+
+<h3>Add Employee</h3>
+
+<form
+  #employeeForm="ngForm"
+  (ngSubmit)="saveEmployee()"
+  class="employee-form">
+
+  <div class="form-field">
+    <label>Employee Code</label>
+
+    <input
+      type="text"
+      name="employeeCode"
+      placeholder="Employee Code"
+      [(ngModel)]="newEmployee.employeeCode"
+      #employeeCode="ngModel"
+      required
+      minlength="4"
+      maxlength="20"
+      pattern="^[A-Za-z0-9]+$">
+
+    @if (employeeCode.invalid && employeeCode.touched) {
+    <div class="error">
+      Enter a valid Employee Code.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>First Name</label>
+
+    <input
+      type="text"
+      name="firstName"
+      placeholder="First Name"
+      [(ngModel)]="newEmployee.firstName"
+      #firstName="ngModel"
+      required
+      maxlength="50"
+      pattern="^[A-Za-z '-]+$">
+
+    @if (firstName.invalid && firstName.touched) {
+    <div class="error">
+      Enter a valid First Name.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Last Name</label>
+
+    <input
+      type="text"
+      name="lastName"
+      placeholder="Last Name"
+      [(ngModel)]="newEmployee.lastName"
+      #lastName="ngModel"
+      required
+      maxlength="50"
+      pattern="^[A-Za-z '-]+$">
+
+    @if (lastName.invalid && lastName.touched) {
+    <div class="error">
+      Enter a valid Last Name.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Gender</label>
+
+    <select
+      name="gender"
+      [(ngModel)]="newEmployee.gender"
+      required>
+
+      <option value="MALE">MALE</option>
+      <option value="FEMALE">FEMALE</option>
+      <option value="OTHER">OTHER</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-field">
+    <label>Date of Birth</label>
+
+    <input
+      type="date"
+      name="dateOfBirth"
+      [(ngModel)]="newEmployee.dateOfBirth"
+      #dateOfBirth="ngModel"
+      [max]="getMaximumDob()"
+      required>
+
+    @if (
+    newEmployee.dateOfBirth &&
+    !isEmployeeAtLeast18()
+    ) {
+    <div class="error">
+      Employee must be at least 18 years old.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Department</label>
+
+    <select
+      name="department"
+      [(ngModel)]="newEmployee.department.departmentId"
+      required>
+
+      <option [ngValue]="0">
+        Select Department
+      </option>
+
+      @for (
+      department of departments;
+      track department.departmentId
+      ) {
+      <option [ngValue]="department.departmentId">
+        {{ department.departmentName }}
+      </option>
+      }
+
+    </select>
+
+    @if (newEmployee.department.departmentId === 0) {
+    <div class="error">
+      Department is required.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Designation ID</label>
+
+    <input
+      type="number"
+      name="designationId"
+      [(ngModel)]="newEmployee.designationId"
+      min="1"
+      required>
+  </div>
+
+
+  <div class="form-field">
+    <label>Email</label>
+
+    <input
+      type="email"
+      name="email"
+      placeholder="Email"
+      [(ngModel)]="newEmployee.email"
+      #email="ngModel"
+      required
+      maxlength="100"
+      email>
+
+    @if (email.invalid && email.touched) {
+    <div class="error">
+      Enter a valid email address.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Mobile</label>
+
+    <input
+      type="text"
+      name="mobile"
+      placeholder="Mobile"
+      [(ngModel)]="newEmployee.mobile"
+      #mobile="ngModel"
+      required
+      maxlength="10"
+      pattern="^[0-9]{10}$">
+
+    @if (mobile.invalid && mobile.touched) {
+    <div class="error">
+      Mobile number must contain exactly 10 digits.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Joining Date</label>
+
+    <input
+      type="date"
+      name="joiningDate"
+      [(ngModel)]="newEmployee.joiningDate"
+      [min]="newEmployee.dateOfBirth"
+      required>
+
+    @if (
+    newEmployee.dateOfBirth &&
+    newEmployee.joiningDate &&
+    newEmployee.joiningDate < newEmployee.dateOfBirth
+    ) {
+    <div class="error">
+      Joining Date cannot be before Date of Birth.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Employment Type</label>
+
+    <select
+      name="employmentType"
+      [(ngModel)]="newEmployee.employmentType"
+      required>
+
+      <option value="PERMANENT">PERMANENT</option>
+      <option value="CONTRACT">CONTRACT</option>
+      <option value="INTERN">INTERN</option>
+      <option value="CONSULTANT">CONSULTANT</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-field">
+    <label>Status</label>
+
+    <select
+      name="status"
+      [(ngModel)]="newEmployee.status"
+      required>
+
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="INACTIVE">INACTIVE</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-actions">
+    <button
+      type="submit"
+      [disabled]="
+        employeeForm.invalid ||
+        newEmployee.department.departmentId === 0 ||
+        !areDatesValid() ||
+        isSubmitting
+      ">
+
+      @if (isSubmitting) {
+      Adding...
+      } @else {
+      Add Employee
+      }
+
+    </button>
+  </div>
+
+</form>
+
+<p>{{ message }}</p>
+
+
+@if (editEmployee) {
+
+<h3>Edit Employee</h3>
+
+<form
+  #editEmployeeForm="ngForm"
+  (ngSubmit)="updateEmployee()"
+  class="employee-form">
+
+  <div class="form-field">
+    <label>Employee Code</label>
+
+    <input
+      type="text"
+      name="editEmployeeCode"
+      [(ngModel)]="editEmployee.employeeCode"
+      readonly>
+  </div>
+
+
+  <div class="form-field">
+    <label>First Name</label>
+
+    <input
+      type="text"
+      name="editFirstName"
+      [(ngModel)]="editEmployee.firstName"
+      #editFirstName="ngModel"
+      required
+      maxlength="50"
+      pattern="^[A-Za-z '-]+$">
+
+    @if (
+    editFirstName.invalid &&
+    editFirstName.touched
+    ) {
+    <div class="error">
+      Enter a valid First Name.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Last Name</label>
+
+    <input
+      type="text"
+      name="editLastName"
+      [(ngModel)]="editEmployee.lastName"
+      #editLastName="ngModel"
+      required
+      maxlength="50"
+      pattern="^[A-Za-z '-]+$">
+
+    @if (
+    editLastName.invalid &&
+    editLastName.touched
+    ) {
+    <div class="error">
+      Enter a valid Last Name.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Gender</label>
+
+    <select
+      name="editGender"
+      [(ngModel)]="editEmployee.gender"
+      required>
+
+      <option value="MALE">MALE</option>
+      <option value="FEMALE">FEMALE</option>
+      <option value="OTHER">OTHER</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-field">
+    <label>Date of Birth</label>
+
+    <input
+      type="date"
+      name="editDateOfBirth"
+      [(ngModel)]="editEmployee.dateOfBirth"
+      [max]="getMaximumDob()"
+      required>
+
+    @if (
+    editEmployee.dateOfBirth &&
+    !isEditEmployeeAtLeast18()
+    ) {
+    <div class="error">
+      Employee must be at least 18 years old.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Department</label>
+
+    <select
+      name="editDepartment"
+      [(ngModel)]="editEmployee.department.departmentId"
+      required>
+
+      @for (
+      department of departments;
+      track department.departmentId
+      ) {
+      <option [ngValue]="department.departmentId">
+        {{ department.departmentName }}
+      </option>
+      }
+
+    </select>
+  </div>
+
+
+  <div class="form-field">
+    <label>Designation ID</label>
+
+    <input
+      type="number"
+      name="editDesignationId"
+      [(ngModel)]="editEmployee.designationId"
+      min="1"
+      required>
+  </div>
+
+
+  <div class="form-field">
+    <label>Email</label>
+
+    <input
+      type="email"
+      name="editEmail"
+      [(ngModel)]="editEmployee.email"
+      #editEmail="ngModel"
+      required
+      maxlength="100"
+      email>
+
+    @if (
+    editEmail.invalid &&
+    editEmail.touched
+    ) {
+    <div class="error">
+      Enter a valid email address.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Mobile</label>
+
+    <input
+      type="text"
+      name="editMobile"
+      [(ngModel)]="editEmployee.mobile"
+      #editMobile="ngModel"
+      required
+      maxlength="10"
+      pattern="^[0-9]{10}$">
+
+    @if (
+    editMobile.invalid &&
+    editMobile.touched
+    ) {
+    <div class="error">
+      Mobile number must contain exactly 10 digits.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Joining Date</label>
+
+    <input
+      type="date"
+      name="editJoiningDate"
+      [(ngModel)]="editEmployee.joiningDate"
+      [min]="editEmployee.dateOfBirth"
+      required>
+
+    @if (
+    editEmployee.dateOfBirth &&
+    editEmployee.joiningDate &&
+    editEmployee.joiningDate <
+    editEmployee.dateOfBirth
+    ) {
+    <div class="error">
+      Joining Date cannot be before Date of Birth.
+    </div>
+    }
+  </div>
+
+
+  <div class="form-field">
+    <label>Employment Type</label>
+
+    <select
+      name="editEmploymentType"
+      [(ngModel)]="editEmployee.employmentType"
+      required>
+
+      <option value="PERMANENT">PERMANENT</option>
+      <option value="CONTRACT">CONTRACT</option>
+      <option value="INTERN">INTERN</option>
+      <option value="CONSULTANT">CONSULTANT</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-field">
+    <label>Status</label>
+
+    <select
+      name="editStatus"
+      [(ngModel)]="editEmployee.status"
+      required>
+
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="INACTIVE">INACTIVE</option>
+      <option value="TERMINATED">TERMINATED</option>
+
+    </select>
+  </div>
+
+
+  <div class="form-actions">
+
+    <button
+      type="submit"
+      [disabled]="
+          editEmployeeForm.invalid ||
+          !areEditDatesValid()
+        ">
+      Save Changes
+    </button>
+
+    <button
+      type="button"
+      (click)="cancelEdit()">
+      Cancel
+    </button>
+
+  </div>
+
+</form>
+}
+
+
+<table>
+
+  <tr>
+    <th>ID</th>
+    <th>Code</th>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Department</th>
+    <th>Email</th>
+    <th>Projects</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+
+  @for (
+  employee of employees;
+  track employee.employeeId
+  ) {
+
+  <tr>
+
+    <td>{{ employee.employeeId }}</td>
+
+    <td>{{ employee.employeeCode }}</td>
+
+    <td>{{ employee.firstName }}</td>
+
+    <td>{{ employee.lastName }}</td>
+
+    <td>
+      {{ employee.department.departmentName }}
+    </td>
+
+    <td>
+      {{ employee.email }}
+    </td>
+
+    <td>
+
+      @if (
+      employee.projects &&
+      employee.projects.length > 0
+      ) {
+
+      @for (
+      project of employee.projects;
+      track project.projectId
+      ) {
+
+      <div>
+        {{ project.projectName }}
+      </div>
+
+      }
+
+      } @else {
+
+      <span>None</span>
+
+      }
+
+    </td>
+
+    <td>
+      {{ employee.status }}
+    </td>
+
+    <td>
+
+      <button
+        type="button"
+        (click)="startEdit(employee)">
+        Edit
+      </button>
+
+      <button
+        type="button"
+        (click)="deleteEmployee(employee.employeeId)">
+        Deactivate
+      </button>
+
+    </td>
+
+  </tr>
+
+  }
+
+</table>
